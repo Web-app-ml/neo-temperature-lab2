@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+
+    <title>Neo Temperature Lab — Premium Converter</title>
+    <meta name="description"
+        content="Futuristic temperature converter with premium gold mode, searchable gold selects, PWA, share card, analytics, sparkles, parallax, sounds & haptics." />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.webmanifest?v=3" />
+
+    <!-- Theme / iOS PWA -->
+    <meta name="theme-color" content="#f6d66b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Tem-pu" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3" />
+
+    <!-- Android (Chrome) – add this to silence the warning -->
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Favicons (tab/bookmarks) -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg?v=3" />
+    <link rel="shortcut icon" href="favicon.ico?v=3" />
+    <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png?v=3" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+
+<body>
+    <noscript>
+        <div class="noscript">This app needs JavaScript enabled.</div>
+    </noscript>
+
+    <!-- Background & Particles -->
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-blob" aria-hidden="true"></div>
+    <canvas id="particles" class="particles" aria-hidden="true"></canvas>
+
+    <main class="shell">
+        <header class="topbar card tilt" data-tilt data-tilt-max="4">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">
+                    <img src="favicon-96x96.png" alt="" class="logo-img" onload="this.closest('.logo').classList.add('has-img')"
+                        onerror="this.closest('.logo').classList.add('img-error')" />
+                    <span class="logo-fallback">🌡️</span>
+                </div>
+
+                <div class="titles">
+                    <h1>Neo Temperature Lab</h1>
+                    <p>Futuristic · Fast · Precise</p>
+                </div>
+            </div>
+            <nav class="actions">
+                <!-- Premium toggle -->
+                <label class="premium-toggle">
+                    <input id="premiumSwitch" type="checkbox" />
+                    <span class="slider"></span>
+                    <span class="label">Enable Premium Mode</span>
+                </label>
+
+                    <!-- Premium micro-themes -->
+                <div id="premiumThemeWrap" class="premium-theme-wrap" hidden>
+                    <label class="mini">
+                        <span>Theme</span>
+                        <select id="premiumTheme" aria-label="Premium theme">
+                            <option value="gold">Classic Gold</option>
+                            <option value="rose">Rose Gold</option>
+                            <option value="platinum">Platinum</option>
+                        </select>
+                    </label>
+                </div>
+
+                <button id="copyLinkBtn" class="btn ghost" title="Copy shareable link">Copy Link</button>
+                <button id="clearAllBtn" class="btn ghost" title="Reset everything">Reset All</button>
+                <button id="inviteBtn" class="btn ghost" title="Invite a friend via QR">Invite Friend</button>
+
+            </nav>
+        </header>
+
+        <!-- Premium ribbon -->
+        <div class="ribbon" aria-hidden="true">
+            <svg viewBox="0 0 400 60" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="g1" x1="0" x2="1">
+                        <stop offset="0" stop-color="#5d4e2a" />
+                        <stop offset="0.25" stop-color="#c1a96e" />
+                        <stop offset="0.5" stop-color="#f6e27a" />
+                        <stop offset="0.75" stop-color="#c1a96e" />
+                        <stop offset="1" stop-color="#5d4e2a" />
+                    </linearGradient>
+                </defs>
+                <rect x="0" y="0" width="400" height="60" fill="url(#g1)" />
+            </svg>
+            <div class="ribbon-wrap">
+                <div class="neo-ribbon"><span class="neo-ribbon__text">PREMIUM</span></div>
+            </div>
+
+
+
+        </div>
+
+        <!-- Converter -->
+        <section class="card hero tilt" data-tilt>
+            <div class="hero-head">
+                <span class="pill" id="statusPill" aria-live="polite">Ready</span>
+                <div class="hint" id="hint" role="status" aria-live="polite"></div>
+            </div>
+
+            <!-- Parser++ -->
+            <div class="row">
+                <div class="field grow">
+                    <label for="powerInput">Smart input: <code>37 C to F</code>, <code>98.6F</code>, or
+                        <code>100 C -> all</code></label>
+                    <input id="powerInput" autocomplete="off"
+                        placeholder="Try: 310 K to °C, 451F to K, 25 reaumur to c, or 100 C -> all" />
+                </div>
+            </div>
+
+            <!-- Classic controls -->
+            <div class="row controls">
+                <div class="field">
+                    <label for="inputValue">Value</label>
+                    <input id="inputValue" type="number" inputmode="decimal" step="any" placeholder="Enter value…" />
+                </div>
+            
+     <!-- From: native + premium custom -->
+     <div class="field">
+        <label for="fromUnit">From</label>
+        <select id="fromUnit" aria-label="From unit" class="native-select">
+            <option value="C">Celsius (°C)</option>
+            <option value="F">Fahrenheit (°F)</option>
+            <option value="K">Kelvin (K)</option>
+            <option value="R">Rankine (°R)</option>
+            <option value="Re">Réaumur (°Re)</option>
+        </select>
+    
+        <!-- Premium: custom searchable select -->
+        <div id="fromCustom" class="gold-select" hidden>
+            <button type="button" class="gold-select__btn" aria-haspopup="listbox" aria-expanded="false" data-for="from">
+                <span class="gold-select__icon">°C</span><span class="gold-select__label">Celsius</span>
+                <span class="gold-select__chev">▼</span>
+            </button>
+            <div class="gold-select__panel" role="listbox" tabindex="-1">
+                <input class="gold-select__search" type="text" placeholder="Search unit…" aria-label="Search unit" />
+                <ul class="gold-select__list"></ul>
+            </div>
+        </div>
+    </div>
+    
+    <button id="swapBtn" class="btn swap" title="Swap (From ⇄ To)" aria-label="Swap units">⇄</button>
+    
+    <!-- To: native + premium custom -->
+    <div class="field">
+        <label for="toUnit">To</label>
+        <select id="toUnit" aria-label="To unit" class="native-select">
+            <option value="F">Fahrenheit (°F)</option>
+            <option value="C">Celsius (°C)</option>
+            <option value="K">Kelvin (K)</option>
+            <option value="R">Rankine (°R)</option>
+            <option value="Re">Réaumur (°Re)</option>
+        </select>
+    
+        <div id="toCustom" class="gold-select" hidden>
+            <button type="button" class="gold-select__btn" aria-haspopup="listbox" aria-expanded="false" data-for="to">
+                <span class="gold-select__icon">°F</span><span class="gold-select__label">Fahrenheit</span>
+                <span class="gold-select__chev">▼</span>
+            </button>
+            <div class="gold-select__panel" role="listbox" tabindex="-1">
+                <input class="gold-select__search" type="text" placeholder="Search unit…" aria-label="Search unit" />
+                <ul class="gold-select__list"></ul>
+            </div>
+        </div>
+      </div>
+                
+              
+                <!-- Precision Area -->
+            <div class="precision">
+                <label for="precision">Precision</label>
+                <div class="precision-wrap">
+                    <input id="precision" class="neo-slider" type="range" min="0" max="8" value="2" />
+                    <input id="precisionNum" class="neo-num" type="number" min="0" max="8" value="2" />
+                </div>
+            </div>
+
+
+
+                    <div class="toggles pro">
+                        <!-- Premium check: Significant figures -->
+                        <label class="neo-check sm" for="sigfigs">
+                            <input type="checkbox" id="sigfigs" class="neo-check__input" />
+                            <span class="neo-check__box" aria-hidden="true"></span>
+                            <span class="neo-check__text">Use significant figures</span>
+                        </label>
+                    
+                        <!-- Premium check: Auto scientific -->
+                        <label class="neo-check sm" for="scientific">
+                            <input type="checkbox" id="scientific" class="neo-check__input" />
+                            <span class="neo-check__box" aria-hidden="true"></span>
+                            <span class="neo-check__text">Auto scientific notation</span>
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="result">
+                <div class="result-line">
+                    <div class="result-text">
+                        <div class="caption">Converted Result</div>
+                        <div id="resultText" class="value" aria-live="polite">—</div>
+                    </div>
+                    <div class="result-actions">
+                        <button id="favBtn" class="btn ghost" title="Save as favorite pair">☆ Favorite</button>
+                        <button id="copyBtn" class="btn ghost" title="Copy result">Copy</button>
+                        <button id="shareCardBtn" class="btn ghost" title="Generate share card (PNG)">Share
+                            Card</button>
+                        <button id="resetBtn" class="btn ghost" title="Clear inputs">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium tools -->
+            <div class="pro-tools" id="proTools" hidden>
+                <div class="pro-title">Premium Tools</div>
+                <div class="pro-grid">
+            
+                    <!-- Neo Toggle (Gold/Rose/Platinum aware) -->
+                    <label class="neo-toggle sm" for="autoCopy">
+                        <input id="autoCopy" type="checkbox" class="neo-toggle__input" role="switch"
+                            aria-label="Auto-copy result on convert" />
+                        <span class="neo-toggle__track" aria-hidden="true">
+                            <span class="neo-toggle__thumb"></span>
+                        </span>
+                        <span class="neo-toggle__text">Auto‑copy result on convert</span>
+                    </label>
+            
+                    <label class="neo-toggle sm" for="soundFx">
+                        <input id="soundFx" type="checkbox" class="neo-toggle__input" role="switch" aria-label="Sound / Haptics" />
+                        <span class="neo-toggle__track" aria-hidden="true">
+                            <span class="neo-toggle__thumb"></span>
+                        </span>
+                        <span class="neo-toggle__text">Sound / Haptics</span>
+                    </label>
+            
+                </div>
+            </div>
+
+
+            <!-- Favorites -->
+            <div class="favorites" id="favoritesBar" hidden>
+                <div class="fav-head">
+                    <h3>Favorites</h3>
+                    <button id="clearFavs" class="btn ghost small" title="Clear favorites">Clear</button>
+                </div>
+                <div id="favChips" class="chips"></div>
+            </div>
+
+            <!-- Analytics (local) -->
+            <div class="analytics" id="analytics" hidden>
+                <h3>Premium Analytics (Local)</h3>
+                <div class="stats-grid">
+                    <div class="stat">
+                        <div class="k">Total Converts</div>
+                        <div id="statTotal" class="v">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="k">Most Used Pair</div>
+                        <div id="statTopPair" class="v">—</div>
+                    </div>
+                    <div class="stat">
+                        <div class="k">Avg Precision</div>
+                        <div id="statAvgP" class="v">—</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Matrix -->
+        <section class="card matrix tilt" data-tilt>
+            <header class="matrix-head">
+                <h2>All Units at a Glance</h2>
+                <p class="muted">Your current value converted to every scale</p>
+            </header>
+            <div class="table-wrap">
+                <table aria-describedby="matrix table of conversions">
+                    <thead>
+                        <tr>
+                            <th>Unit</th>
+                            <th>Value</th>
+                            <th>Absolute Zero</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrixBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- History -->
+        <section class="card history tilt" data-tilt>
+            <div class="history-head">
+                <h2>History</h2>
+                <div class="history-actions">
+                    <button id="exportCSV" class="btn ghost small" title="Export as CSV">Export CSV</button>
+                    <button id="clearHistoryBtn" class="btn ghost small" title="Clear history">Clear</button>
+                </div>
+            </div>
+            <ul id="historyList" class="history-list" aria-live="polite"></ul>
+        </section>
+
+        <footer class="footer">
+            <div class="muted">
+                Supported: °C · °F · K · °R · °Re • Tips:
+                <kbd>Ctrl/Cmd+K</kbd> swap,
+                <kbd>Enter</kbd> copy,
+                <kbd>Esc</kbd> clear
+            </div>
+        </footer>
+    </main>
+
+
+    <!-- QR code generator (must load before app.js) -->
+    <script defer src="./lib/qrcode.min.js?v=1"></script>
+    <script defer src="app.js?v=1"></script>
+
+
+
+
+
+
+
+
+</body>
+
+</html>
